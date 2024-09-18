@@ -1,69 +1,129 @@
+<audio id="gameAudio" src="audiofile.mp3"></audio>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris Game</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
+    <!--<meta name="viewport" content="height=800, initial-scale=1">-->
+    <meta name="viewport" content="width=device-width, height=device-height">
+    <meta name="description" content="Simple browser-based Tetris implementation">
+    <meta name="keywords" content="Tetris, FTetris, ScalaJS">
+    <meta name="author" content="Cameron Reuschel">
+
+    <link rel="shortcut icon" type="image/png" href="favicon.ico"/>
+    <title>Tetris from Project School Stash</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <script src="target/scala-2.12/functionaltetris-opt.js"></script>
+
+    <script>
+        if (!typeof(Storage))
+            alert("Your browser does not support local storage. No highscores saved.")
+    </script>
+
+    <script> function setHTML(id, text) {
+        document.getElementById(id).innerHTML = text;
+    }</script>
+    <script> function getHighscore() {
+        return parseInt(localStorage.highscore) || 0;
+    }</script>
+    <script> function getMostLines() {
+        return parseInt(localStorage.mostlines) || 0;
+    }</script>
+    <script>
+        var simpleRenderingMode;
+        var guidelineColors;
+        function startGame() {
+            document.getElementById('gameAudio').play();
+            gameConf = {
+                // the canvas
+                mainCanvas: document.getElementById("mainCanv"),
+                nextTileCanvas: document.getElementById("prevCanv"),
+                // the point callback
+                onpointchange: function (pts) {
+                    if (pts > getHighscore()) {
+                        localStorage.highscore = pts.toString();
+                        setHTML("highscore", "Highscore: " + pts.toString());
+                    }
+                    setHTML("score", "Score: " + pts.toString());
+                },
+                // the level callback
+                onlevelchange: function (lvl) {
+                    setHTML("level", "<b>Level: " + lvl + "</b>");
+                },
+                // the line clear callback
+                onlineclear: function (lcs) {
+                    if (lcs > getMostLines()) {
+                        localStorage.mostlines = lcs.toString();
+                        setHTML("mostlines", "Most lines: " + lcs.toString());
+                    }
+                    setHTML("linescleared", "Lines: " + lcs);
+                },
+                ongameend: function () { $("#startbtn").prop("disabled",false); },
+                // the touch root if not the canvas
+                touchRootNode: document.getElementById("touchroot"),
+                simpleRenderingMode: () => simpleRenderingMode || false,
+                guidelineColors: () => guidelineColors || false
+            };
+            FTetris.startGame(gameConf);
+            $("#startbtn").prop("disabled",true);
         }
-        #tetris {
-            display: grid;
-            grid-template-columns: repeat(10, 30px);
-            grid-template-rows: repeat(20, 30px);
-            gap: 1px;
-            background-color: #222;
-        }
-        .block {
-            width: 30px;
-            height: 30px;
-            background-color: #fff;
-        }
-    </style>
+    </script>
+    <script> function setSimpleMode(cb) {
+        simpleRenderingMode = cb.checked;
+    }</script>
+    <script> function setGuidelineColors(cb) {
+        guidelineColors = cb.checked;
+    }</script>
 </head>
 <body>
-    <div id="tetris"></div>
-    <script>
-        const tetris = document.getElementById('tetris');
-        const rows = 20;
-        const cols = 10;
-        let board = Array.from({ length: rows }, () => Array(cols).fill(0));
+<div class="container">
+    <div class="pb-2 mt-4 mb-2 border-bottom"></div>
+    <div class="row"> <!-- justify-content-center -->
+        <div class="col-4">
+        <!-- Has to be a table because columns are too dynamic -->
+        <table style="border-collapse: separate; border-spacing: 1em;"><tbody><tr><td id="touchroot">
+            <canvas width="300px" height="600px" id="mainCanv" style="margin:auto; border:2px solid #000000;">
+                Your browser must support the html5 canvas. Sorry, bro.
+            </canvas>
+        </td><td valign="top">
+            <h1 align="center">TETRIS</h1>
+            <hr/>
+            <canvas width="120px" height="120px" id="prevCanv" style="margin:auto; border:1px solid #000000;"></canvas>
+            <hr/>
+            <!-- Is a table because I suck at css and it looks nice -->
+            <table><tbody><tr><td>
+                <p id="level" style="font-size: 20px; margin: auto;"><b>Level: 0</b></p>
+            </td></tr><tr><td>
+                <p id="linescleared" style="font-size: 18px; margin: auto;">Lines: 0</p>
+            </td></tr><tr><td>
+                <p id="score" style="font-size: 18px; margin: auto;">Score: 0</p>
+            </td></tr></tbody></table>
+            <hr/>
+            <span class="switch">
+              <input type="checkbox" class="switch switch-sm" onclick="setSimpleMode(this)" id="simpleModeCheck"/>
+              <label style="font-size: 14px; margin: auto;" for="simpleModeCheck">Simple Graphics</label>
+            </span>
+            <span class="switch">
+                <input type="checkbox" class = "switch switch-sm" onclick="setGuidelineColors(this)" id="guidelineColorCheck"/>
+                <label style="font-size: 14px; margin: auto;" for="guidelineColorCheck">Standard Colors</label>
+            </span>
+            <hr/>
+            <div><button onclick="startGame()" style="margin: auto;" id="startbtn">START GAME</button></div>
+            <hr/>
+            <div><p id="highscore" style="font-size: 14px; margin: auto;">Highscore: 0</p></div>
+            <div><p id="mostlines" style="font-size: 14px; margin: auto;">Most lines: 0</p></div>
+        </td></tr>
+        </tbody></table>
+        </div>
+    </div>
+</div>
 
-        function drawBoard() {
-            tetris.innerHTML = '';
-            board.forEach(row => {
-                row.forEach(cell => {
-                    const block = document.createElement('div');
-                    block.className = 'block';
-                    block.style.backgroundColor = cell ? 'cyan' : '#222';
-                    tetris.appendChild(block);
-                });
-            });
-        }
+<script>document.getElementById("highscore").innerText = "Highscore: " + getHighscore().toString();</script>
+<script>document.getElementById("mostlines").innerText = "Most lines: " + getMostLines().toString();</script>
 
-        function dropBlock() {
-    let blockDropped = false; // Flag to check if a block has been dropped
-    for (let col = 0; col < cols; col++) {
-        for (let row = rows - 1; row >= 0; row--) {
-            if (board[row][col] === 0) {
-                board[row][col] = 1; // Place the block
-                blockDropped = true; // Set the flag to true
-                break; // Exit the inner loop
-            }
-        }
-        if (blockDropped) break; // Exit the outer loop if a block has been dropped
-    }
-    drawBoard(); // Redraw the board after placing the block
-}
-
-        setInterval(dropBlock, 1000);
-    </script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 </body>
 </html>
