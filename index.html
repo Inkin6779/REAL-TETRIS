@@ -49,17 +49,19 @@
         }
 
         function dropBlock() {
-            // Simple block dropping logic
-            for (let row = rows - 1; row >= 0; row--) {
-                for (let col = 0; col < cols; col++) {
-                    if (board[row][col] === 0) {
-                        board[row][col] = 1;
-                        drawBoard();
-                        return;
-                    }
-                }
+    let blockDropped = false; // Flag to check if a block has been dropped
+    for (let col = 0; col < cols; col++) {
+        for (let row = rows - 1; row >= 0; row--) {
+            if (board[row][col] === 0) {
+                board[row][col] = 1; // Place the block
+                blockDropped = true; // Set the flag to true
+                break; // Exit the inner loop
             }
         }
+        if (blockDropped) break; // Exit the outer loop if a block has been dropped
+    }
+    drawBoard(); // Redraw the board after placing the block
+}
 
         setInterval(dropBlock, 1000);
     </script>
