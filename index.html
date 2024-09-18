@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        #tetris {
+            display: grid;
+            grid-template-columns: repeat(10, 30px);
+            grid-template-rows: repeat(20, 30px);
+            gap: 1px;
+            background-color: #222;
+        }
+        .block {
+            width: 30px;
+            height: 30px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div id="tetris"></div>
+    <script>
+        const tetris = document.getElementById('tetris');
+        const rows = 20;
+        const cols = 10;
+        let board = Array.from({ length: rows }, () => Array(cols).fill(0));
+
+        function drawBoard() {
+            tetris.innerHTML = '';
+            board.forEach(row => {
+                row.forEach(cell => {
+                    const block = document.createElement('div');
+                    block.className = 'block';
+                    block.style.backgroundColor = cell ? 'cyan' : '#222';
+                    tetris.appendChild(block);
+                });
+            });
+        }
+
+        function dropBlock() {
+            // Simple block dropping logic
+            for (let row = rows - 1; row >= 0; row--) {
+                for (let col = 0; col < cols; col++) {
+                    if (board[row][col] === 0) {
+                        board[row][col] = 1;
+                        drawBoard();
+                        return;
+                    }
+                }
+            }
+        }
+
+        setInterval(dropBlock, 1000);
+    </script>
+</body>
+</html>
